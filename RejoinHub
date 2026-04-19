@@ -19,7 +19,7 @@ local HttpService = game:GetService("HttpService")
 local player = Players.LocalPlayer
 
 -- ⚙️ SCRIPT LINK
-local SCRIPT_LINK = "https://raw.githubusercontent.com/krazyaam-crypto/ScriptTrungKien/main/Support"
+local SCRIPT_LINK = "https://github.com/krazyaam-crypto/Rejoin/blob/main/RejoinHub"
 
 -- ⚡ AUTO EXEC
 if queue_on_teleport then
