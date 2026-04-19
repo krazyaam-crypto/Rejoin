@@ -1,3 +1,11 @@
+-- 🔑 KEY SYSTEM
+local VALID_KEY = "Keyviphub"
+
+if not script_key or script_key ~= VALID_KEY then
+	game.Players.LocalPlayer:Kick("No have key")
+	return
+end
+
 repeat task.wait() until game:IsLoaded()
 
 -- UI
