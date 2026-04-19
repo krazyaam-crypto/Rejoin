@@ -1,6 +1,6 @@
 repeat task.wait() until game:IsLoaded()
 
--- LOAD UI
+-- UI
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
@@ -18,40 +18,48 @@ local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local player = Players.LocalPlayer
 
--- ⚙️ SCRIPT LINK
-local SCRIPT_LINK = "https://raw.githubusercontent.com/krazyaam-crypto/Rejoin/refs/heads/main/RejoinHub"
+-- ⚙️ LINK RAW (FIX)
+local SCRIPT_LINK = "https://raw.githubusercontent.com/krazyaam-crypto/Rejoin/main/RejoinHub"
 
--- ⚡ AUTO EXEC
+-- AUTO EXEC
 if queue_on_teleport then
-	queue_on_teleport('loadstring(game:HttpGet("https://github.com/krazyaam-crypto/Rejoin/blob/main/RejoinHub"))()')
+	queue_on_teleport('loadstring(game:HttpGet("'..SCRIPT_LINK..'"))()')
 end
 
--- =========================
--- 📊 TIMER
--- =========================
+-- TIMER
 local startTime = os.time()
+local timerLabel = Tab:CreateLabel("Time: 00:00:00")
 
-local function getTime()
-	local t = os.time() - startTime
-	local h = math.floor(t/3600)
-	local m = math.floor((t%3600)/60)
-	local s = t%60
-	return string.format("%02d:%02d:%02d",h,m,s)
-end
+task.spawn(function()
+	while true do
+		task.wait(1)
+		local t = os.time() - startTime
+		local h = math.floor(t/3600)
+		local m = math.floor((t%3600)/60)
+		local s = t%60
+		
+		timerLabel:Set("Time: "..string.format("%02d:%02d:%02d",h,m,s))
+	end
+end)
 
--- =========================
--- 📒 LOG
--- =========================
+-- LOG
 local logs = {}
+local logBox = Tab:CreateParagraph({Title="Log", Content="..."})
+
+local function updateLog()
+	logBox:Set({
+		Title = "Log",
+		Content = (#logs > 0 and table.concat(logs,"\n") or "Chưa có dữ liệu")
+	})
+end
 
 local function addLog(text)
 	local time = os.date("%H:%M:%S")
 	table.insert(logs, "["..time.."] "..text)
+	updateLog()
 end
 
--- =========================
--- 🔁 REJOIN
--- =========================
+-- REJOIN
 local function rejoin()
 	task.wait(2)
 	TeleportService:Teleport(game.PlaceId, player)
@@ -67,13 +75,9 @@ game:GetService("CoreGui").RobloxPromptGui.promptOverlay.ChildAdded:Connect(func
 
 		msg = string.lower(msg or "")
 
-		-- ❌ bỏ qua full
 		if string.find(msg,"full") then return end
-		
-		-- ❌ bỏ qua teleport fail
 		if string.find(msg,"teleport") then return end
 
-		-- ✅ kick/disconnect
 		if string.find(msg,"kick")
 		or string.find(msg,"disconnect")
 		or string.find(msg,"connection")
@@ -85,14 +89,12 @@ game:GetService("CoreGui").RobloxPromptGui.promptOverlay.ChildAdded:Connect(func
 	end
 end)
 
--- =========================
--- 🌐 HOP ÍT NGƯỜI
--- =========================
+-- HOP SERVER (FIX)
 local function hopLow()
 	local placeId = game.PlaceId
 	
 	local req = game:HttpGet(
-		"https://games.roblox.com/v1/games/"2753915549"/servers/Public?sortOrder=Asc&limit=100"
+		"https://games.roblox.com/v1/games/"..2753915549.."/servers/Public?sortOrder=Asc&limit=100"
 	)
 	
 	local data = HttpService:JSONDecode(req)
@@ -113,29 +115,7 @@ local function hopLow()
 	end
 end
 
--- =========================
--- UI ELEMENTS
--- =========================
-
--- 📊 TIMER DISPLAY
-Tab:CreateLabel("Time: 00:00:00")
-
-task.spawn(function()
-	while true do
-		task.wait(1)
-		pcall(function()
-			Tab:CreateLabel("Time: "..getTime())
-		end)
-	end
-end)
-
--- 📒 LOG BOX
-Tab:CreateParagraph({
-	Title = "Log",
-	Content = "Chưa có dữ liệu"
-})
-
--- 🔘 BUTTONS
+-- BUTTONS
 Tab:CreateButton({
 	Name = "➕ Ghi chú",
 	Callback = function()
@@ -147,6 +127,7 @@ Tab:CreateButton({
 	Name = "🗑️ Xóa log",
 	Callback = function()
 		logs = {}
+		updateLog()
 	end
 })
 
@@ -157,19 +138,4 @@ Tab:CreateButton({
 	end
 })
 
--- 🔄 UPDATE LOG UI
-task.spawn(function()
-	while true do
-		task.wait(2)
-		local text = table.concat(logs, "\n")
-		if text == "" then text = "Chưa có dữ liệu" end
-		
-		Tab:CreateParagraph({
-			Title = "Log",
-			Content = text
-		})
-	end
-end)
-
--- START
 addLog("Script started")
