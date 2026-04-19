@@ -18,12 +18,12 @@ local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local player = Players.LocalPlayer
 
--- ⚙️ LINK RAW (THEO BẠN)
+-- ⚙️ LINK SCRIPT (RAW)
 local SCRIPT_LINK = "https://raw.githubusercontent.com/krazyaam-crypto/Rejoin/refs/heads/main/RejoinHub"
 
 -- ⚡ AUTO EXEC
 if queue_on_teleport then
-	queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/krazyaam-crypto/Rejoin/refs/heads/main/RejoinHub"))()')
+	queue_on_teleport('loadstring(game:HttpGet("'..SCRIPT_LINK..'"))()')
 end
 
 -- =========================
@@ -63,13 +63,25 @@ local function addLog(text)
 end
 
 -- =========================
--- 🔁 REJOIN
+-- 🔁 REJOIN (ANTI LOOP)
 -- =========================
+local lastRejoin = 0
+local REJOIN_DELAY = 10
+
 local function rejoin()
+	if tick() - lastRejoin < REJOIN_DELAY then
+		addLog("Chặn rejoin (anti loop)")
+		return
+	end
+	
+	lastRejoin = tick()
+	addLog("Rejoin...")
+	
 	task.wait(2)
 	TeleportService:Teleport(2753915549, player)
 end
 
+-- BẮT LỖI KICK
 game:GetService("CoreGui").RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(child)
 	if child.Name == "ErrorPrompt" then
 		
@@ -106,7 +118,7 @@ local function hopLow()
 	
 	local success, req = pcall(function()
 		return game:HttpGet(
-			"https://games.roblox.com/v1/games/"..placeId.."/servers/Public?sortOrder=Asc&limit=100"
+			"https://games.roblox.com/v1/games/"..2753915549.."/servers/Public?sortOrder=Asc&limit=100"
 		)
 	end)
 
@@ -119,7 +131,8 @@ local function hopLow()
 	local servers = {}
 
 	for _,v in pairs(data.data) do
-		if v.playing < v.maxPlayers then
+		-- tránh server gần full
+		if v.playing < (v.maxPlayers - 2) then
 			table.insert(servers, v.id)
 		end
 	end
@@ -158,4 +171,5 @@ Tab:CreateButton({
 	end
 })
 
+-- START
 addLog("Script started")
