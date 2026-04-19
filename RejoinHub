@@ -18,15 +18,17 @@ local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local player = Players.LocalPlayer
 
--- ⚙️ LINK RAW (FIX)
-local SCRIPT_LINK = "https://raw.githubusercontent.com/krazyaam-crypto/Rejoin/main/RejoinHub"
+-- ⚙️ LINK RAW (THEO BẠN)
+local SCRIPT_LINK = "https://raw.githubusercontent.com/krazyaam-crypto/Rejoin/refs/heads/main/RejoinHub"
 
--- AUTO EXEC
+-- ⚡ AUTO EXEC
 if queue_on_teleport then
-	queue_on_teleport('loadstring(game:HttpGet("https://github.com/krazyaam-crypto/Rejoin/blob/main/RejoinHub"))()')
+	queue_on_teleport('loadstring(game:HttpGet("'..SCRIPT_LINK..'"))()')
 end
 
--- TIMER
+-- =========================
+-- 📊 TIMER
+-- =========================
 local startTime = os.time()
 local timerLabel = Tab:CreateLabel("Time: 00:00:00")
 
@@ -37,14 +39,15 @@ task.spawn(function()
 		local h = math.floor(t/3600)
 		local m = math.floor((t%3600)/60)
 		local s = t%60
-		
 		timerLabel:Set("Time: "..string.format("%02d:%02d:%02d",h,m,s))
 	end
 end)
 
--- LOG
+-- =========================
+-- 📒 LOG
+-- =========================
 local logs = {}
-local logBox = Tab:CreateParagraph({Title="Log", Content="..."})
+local logBox = Tab:CreateParagraph({Title="Log", Content="Chưa có dữ liệu"})
 
 local function updateLog()
 	logBox:Set({
@@ -59,10 +62,12 @@ local function addLog(text)
 	updateLog()
 end
 
--- REJOIN
+-- =========================
+-- 🔁 REJOIN
+-- =========================
 local function rejoin()
 	task.wait(2)
-	TeleportService:Teleport(game.PlaceId, player)
+	TeleportService:Teleport(2753915549, player)
 end
 
 game:GetService("CoreGui").RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(child)
@@ -75,27 +80,40 @@ game:GetService("CoreGui").RobloxPromptGui.promptOverlay.ChildAdded:Connect(func
 
 		msg = string.lower(msg or "")
 
+		-- ❌ bỏ qua server full
 		if string.find(msg,"full") then return end
+		
+		-- ❌ bỏ qua teleport fail
 		if string.find(msg,"teleport") then return end
 
+		-- ✅ chỉ rejoin khi cần
 		if string.find(msg,"kick")
 		or string.find(msg,"disconnect")
 		or string.find(msg,"connection")
 		or string.find(msg,"error") then
 			
-			addLog("Kick → Rejoin")
+			addLog("Kick/Disconnect → Rejoin")
 			rejoin()
 		end
 	end
 end)
 
--- HOP SERVER (FIX)
+-- =========================
+-- 🌐 HOP SERVER ÍT NGƯỜI
+-- =========================
 local function hopLow()
-	local placeId = game.PlaceId
+	local placeId = 2753915549
 	
-	local req = game:HttpGet(
-		"https://games.roblox.com/v1/games/"..2753915549.."/servers/Public?sortOrder=Asc&limit=100"
-	)
+	local success, req = pcall(function()
+		return game:HttpGet(
+			"https://games.roblox.com/v1/games/"..placeId.."/servers/Public?sortOrder=Asc&limit=100"
+		)
+	end)
+
+	if not success then
+		addLog("Lỗi lấy server")
+		return
+	end
 	
 	local data = HttpService:JSONDecode(req)
 	local servers = {}
@@ -108,14 +126,16 @@ local function hopLow()
 
 	if #servers > 0 then
 		local id = servers[math.random(1,#servers)]
-		addLog("Hop server")
+		addLog("Hop server ít người")
 		TeleportService:TeleportToPlaceInstance(placeId, id, player)
 	else
-		addLog("Không có server")
+		addLog("Không có server phù hợp")
 	end
 end
 
+-- =========================
 -- BUTTONS
+-- =========================
 Tab:CreateButton({
 	Name = "➕ Ghi chú",
 	Callback = function()
